@@ -140,7 +140,6 @@ body {
 .memory-game-blocks .game-block .back img {
   width: 140px;
   height: 140px;
-  margin-top: 30px;
 }
 .memory-game-blocks .game-block .face {
   position: absolute;
@@ -197,6 +196,11 @@ body {
 }
 
 @media screen and (max-width: 575px) {
+  .info-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .memory-game-blocks .game-block {
     height: 150px;
     flex: 1 0 calc(100% / 4);

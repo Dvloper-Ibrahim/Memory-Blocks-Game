@@ -1,5 +1,5 @@
 let timerElement = document.querySelector(".info-container .timer");
-// let triesCount = 0;
+let triesElement = document.querySelector(".tries span");
 let gameTime = localStorage.getItem("game-time");
 let currentTime = gameTime;
 let timerIntervalId = null;
@@ -19,6 +19,9 @@ if (!gameTime) {
 timerElement.innerHTML = gameTime;
 
 function playTimer() {
+  currentTime = "00:00";
+  timerElement.innerHTML = currentTime;
+
   let [minute, second] = gameTime.split(':').map(Number);
 
   if (isNaN(minute) || isNaN(second) || minute < 0 || second < 0 || second > 59) {
@@ -136,8 +139,6 @@ function stopClicking() {
 
 // Check Matched Blocks
 function checkMatchedBlocks(firstBlock, secondBlock) {
-  let triesElement = document.querySelector(".tries span");
-
   if (firstBlock.dataset.technology === secondBlock.dataset.technology) {
     firstBlock.classList.remove("is-flipped");
     secondBlock.classList.remove("is-flipped");
@@ -220,6 +221,7 @@ function setVariablesToDefault() {
     finishedAt: '',
     triesCount: 0,
   }
+  triesElement.innerHTML = competitor.triesCount;
 }
 
 // Add or update existing competitors
@@ -256,7 +258,5 @@ function showCompetitors() {
         `
       });
     })
-    console.log(competitors);
-    console.log(competitor);
   }
 }
