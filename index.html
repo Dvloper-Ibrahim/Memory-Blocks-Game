@@ -11,8 +11,22 @@
       <span>Start Game</span>
     </div>
 
+    <div class="game-win">
+      <h1>Winner !</h1>
+      <span class="play-again">Play Again</span>
+      <div class="competitors-board">
+        <h3 class="title">Competitors</h3>
+      </div>
+    </div>
+
+    <div class="game-end">
+      <span class="end">Game Over</span>
+      <span class="try">Try Again</span>
+    </div>
+
     <div class="info-container">
       <div class="name">Hello <span></span></div>
+      <span class="timer"></span>
       <div class="tries">Wrong Tries: <span>0</span></div>
     </div>
 
@@ -141,6 +155,9 @@
 
     <audio id="success" src="audio/success.mp3" preload="auto"></audio>
     <audio id="fail" src="audio/fail.mp3" preload="auto"></audio>
+    <audio id="start" src="audio/start-game.wav" preload="auto"></audio>
+    <audio id="time-out" src="audio/time-out.wav" preload="auto"></audio>
+    <audio id="win-game" src="audio/game-win.wav" preload="auto"></audio>
 
     <script src="main.js"></script>
   </body>

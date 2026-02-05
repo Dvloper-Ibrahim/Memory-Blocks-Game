@@ -1,9 +1,87 @@
-document.querySelector(".control-buttons span").onclick = function () {
-  let yourName = prompt("What's your name?") || "Unknown";
+let timerElement = document.querySelector(".info-container .timer");
+// let triesCount = 0;
+let gameTime = localStorage.getItem("game-time");
+let currentTime = gameTime;
+let timerIntervalId = null;
 
-  document.querySelector(".name span").innerHTML = yourName;
-  document.querySelector(".control-buttons").remove();
+let competitor = {
+  name: '',
+  finishedAt: '',
+  triesCount: 0,
 };
+let competitors = JSON.parse(localStorage.getItem('competitors')) || [];
+showCompetitors();
+
+if (!gameTime) {
+  gameTime = "02:00";
+  localStorage.setItem("game-time", gameTime);
+}
+timerElement.innerHTML = gameTime;
+
+function playTimer() {
+  let [minute, second] = gameTime.split(':').map(Number);
+
+  if (isNaN(minute) || isNaN(second) || minute < 0 || second < 0 || second > 59) {
+    alert("Invalid time format. Use MM:SS (e.g. '05:30')");
+    return;
+  }
+
+  if (timerIntervalId) {
+    clearInterval(timerIntervalId);
+  }
+
+  timerIntervalId = setInterval(() => {
+    let displayMin = String(minute).padStart(2, '0');
+    let displaySec = String(second).padStart(2, '0');
+
+    currentTime = `${displayMin}:${displaySec}`;
+    timerElement.innerHTML = currentTime;
+
+    // Decrease time
+    if (second === 0) {
+      if (minute === 0) {
+        document.getElementById("time-out").play();
+        document.querySelector(".game-end").classList.add('show');
+        resetTimer();
+        resetGame();
+        return;
+      }
+      minute--;
+      second = 59;
+    } else {
+      second--;
+    }
+  }, 1000);
+}
+
+document.querySelector(".control-buttons span").onclick = function () {
+  competitor.name = prompt("What's your name?");
+
+  if (competitor.name) {
+    document.querySelector(".name span").innerHTML = competitor.name;
+    document.querySelector(".control-buttons").remove();
+    document.getElementById("start").play();
+    playTimer();
+  } else {
+    alert("Please, enter your name");
+  }
+};
+
+document.querySelector(".game-end .try").onclick = function () {
+  setVariablesToDefault();
+  document.querySelector(".game-end").classList.remove('show');
+  document.getElementById("start").play();
+  playTimer();
+};
+
+document.querySelector(".game-win .play-again").onclick = function () {
+  setVariablesToDefault();
+  document.querySelector(".game-win").classList.remove('show');
+  document.getElementById("start").play();
+  playTimer();
+};
+
+// ========================================================
 
 let duration = 1000;
 
@@ -38,8 +116,6 @@ function flipBlock(selectedBlock) {
 
   // If there are 2 selected blocks
   if (allFlippedBlocks.length === 2) {
-    console.log("2 Flipped Blocks Selected");
-
     // Stop clicking function
     stopClicking();
 
@@ -69,9 +145,20 @@ function checkMatchedBlocks(firstBlock, secondBlock) {
     firstBlock.classList.add("has-match");
     secondBlock.classList.add("has-match");
 
-    document.getElementById("success").play();
+    if (blocks.every(block => block.classList.contains("has-match"))) {
+      resetTimer();
+      updateCompetitors();
+      setTimeout(() => {
+        resetGame();
+        document.getElementById("win-game").play();
+        document.querySelector(".game-win").classList.add('show');
+      }, duration);
+    } else {
+      document.getElementById("success").play();
+    }
   } else {
-    triesElement.innerHTML = parseInt(triesElement.innerHTML) + 1;
+    competitor.triesCount++;
+    triesElement.innerHTML = competitor.triesCount;
 
     setTimeout(() => {
       firstBlock.classList.remove("is-flipped");
@@ -105,4 +192,71 @@ function shuffle(array) {
     array[random] = temp;
   }
   return array;
+}
+
+// Reset game
+function resetGame() {
+  blocks = Array.from(blocksContainer.children);
+  shuffle(orderRange);
+
+  blocks.forEach((block, index) => {
+    block.classList.remove('has-match', 'is-flipped');
+    block.style.order = orderRange[index];
+  });
+  orderRange = [...Array(blocks.length).keys()];
+  shuffle(orderRange);
+}
+
+// Reset timer
+function resetTimer() {
+  clearInterval(timerIntervalId);
+  timerIntervalId = null;
+}
+
+function setVariablesToDefault() {
+  currentTime = gameTime;
+  competitor = {
+    ...competitor,
+    finishedAt: '',
+    triesCount: 0,
+  }
+}
+
+// Add or update existing competitors
+function updateCompetitors() {
+  competitor.finishedAt = currentTime;
+  let oldCompetitor = competitors.find(c => c.name === competitor.name);
+  if (oldCompetitor) {
+    competitors.splice(competitors.indexOf(oldCompetitor), 1, competitor);
+  } else {
+    competitors.push(competitor);
+  }
+  localStorage.setItem('competitors', JSON.stringify(competitors));
+  showCompetitors();
+}
+
+// Fill competitors part if exist
+function showCompetitors() {
+  if (competitors.length) {
+    document.querySelectorAll(".competitors-board .competitor").forEach((ele) => {
+      ele.remove();
+    });
+    document.querySelectorAll(".competitors-board").forEach(ele => {
+      ele.classList.add('show');
+    });
+
+    competitors.forEach(c => {
+      document.querySelectorAll(".competitors-board").forEach(ele => {
+        ele.innerHTML += `
+          <div class="competitor ${c.name === competitor.name ? 'active' : ''}">
+            <span class="name">${c.name}</span>
+            <div> In <span class="time">${c.finishedAt}</span></div>
+            <div> With <span class="tries">${c.triesCount}</span> tries</div>
+          </div>
+        `
+      });
+    })
+    console.log(competitors);
+    console.log(competitor);
+  }
 }
